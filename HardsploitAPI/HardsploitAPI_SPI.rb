@@ -129,9 +129,6 @@ end
 			raise TypeError, "There is an issue with calculating of number of byte needed"
 		end
 
-		#Enable write latch
-		spi_Interact(mode:mode,speed:speed,payload:[enableWriteSpiCommand])
-
 		#if flash memory we need to erase it before and wait enought
 		#time (erase cycle time in datasheet) or polling status register
 		if isFLASH then
@@ -146,8 +143,10 @@ end
 
 		#SEND the first complete trame
 		for i in 0..number_complet_packet-1 do
+			#Enable write latch
+			spi_Interact(mode:mode,speed:speed,payload:[enableWriteSpiCommand])
 			packet = generate_spi_write_command numberOfByteAddress,writeSpiCommand,i*packet_size+startAddress,file.read(packet_size).unpack("C*")
-			temp = spi_Interact(mode,speed,packet)
+		  temp = spi_Interact(mode,speed,packet)
 			case temp
 				when HardsploitAPI::USB_STATE::PACKET_IS_TOO_LARGE
 					puts "PACKET_IS_TOO_LARGE max: #{HardsploitAPI::USB::USB_TRAME_SIZE}"
@@ -171,6 +170,8 @@ end
 		end
 
 		if(size_last_packet > 0 )then
+			#Enable write latch
+			spi_Interact(mode:mode,speed:speed,payload:[enableWriteSpiCommand])
 			packet = generate_spi_write_command numberOfByteAddress,writeSpiCommand,number_complet_packet*packet_size+startAddress,file.read(size_last_packet).unpack("C*")
 			temp = spi_Interact(mode,speed,packet)
 			case temp
