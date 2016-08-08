@@ -6,7 +6,7 @@
 #  License URI: http://www.gnu.org/licenses/gpl.txt
 #===================================================
 
-class HardsploitAPI
+class HardsploitAPI_TEST
 public
 		# Write value of 64 IO for testing purpose
 		# * +value+:: 64bits to write on all ports

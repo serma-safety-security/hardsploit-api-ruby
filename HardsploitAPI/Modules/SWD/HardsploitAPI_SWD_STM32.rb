@@ -13,6 +13,7 @@ attr_accessor :ahb
 
 	def initialize(debugPort)
 		@ahb = SWD_MEM_AP.new(debugPort, 0)
+		@debugPort = debugPort
 	end
 
 	def halt
@@ -38,21 +39,31 @@ attr_accessor :ahb
 		# IMPLEMENTATION DEFINED. This means that auto address incrementing at a 1KB boundary
 		# is IMPLEMENTATION DEFINED
 
-		#But for hardsploit max 8192  so chuck to  1k
+		#But for hardsploit max 8192  so chuck to  1k due to swd limitation
 
 		packet_size = 1024
-		number_complet_packet = (size/packet_size).floor
+		number_complet_packet = (size / packet_size).floor
 		size_last_packet =  size % packet_size
-
+		startTime = Time.now
 		#number_complet_packet
-		for i in 0..number_complet_packet-1 do
- 			data.push(*self.ahb.readBlock(i*4*packet_size+address,packet_size))
-			puts "Read #{packet_size} KB : #{i}"
+		for i in 0..number_complet_packet - 1 do
+ 			data.push(*self.ahb.readBlock(i * 4 * packet_size + address, packet_size))
+			#puts "Read #{packet_size} KB : #{i}"
+			HardsploitAPI.instance.consoleProgress(
+				percent:	 100 * (i + 1) / (number_complet_packet + (size_last_packet.zero? ? 0 : 1)),
+				startTime: startTime,
+				endTime:	 Time.new
+			)
 		end
 		#Last partial packet
 		if size_last_packet > 0 then
 	  	data.push(*self.ahb.readBlock(number_complet_packet*4*packet_size+address,size_last_packet))
-				puts "Read last packet : #{size_last_packet} packet of 4 bytes"
+				#puts "Read last packet : #{size_last_packet} packet of 4 bytes"
+				HardsploitAPI.instance.consoleProgress(
+					percent:	 100,
+					startTime: startTime,
+					endTime:	 Time.new
+				)
 		end
 		return data
 	end
@@ -62,19 +73,25 @@ attr_accessor :ahb
 			packet_size = 1024 #1024
 			number_complet_packet = (data.size/packet_size).floor
 			size_last_packet =  data.size % packet_size
-
-			ahb.csw(2, 1) # 16-bit packed incrementing addressing
+			startTime = Time.now
+			#ahb.csw(2, 1) # 16-bit packed incrementing addressing
 			#number_complet_packet
 			for i in 0..number_complet_packet-1 do
 				self.ahb.writeBlock(address+i*packet_size,data[i*packet_size..i*packet_size-1+packet_size])
-				puts "Write #{packet_size} KB : #{i}"
+				#puts "Write #{packet_size} KB : #{i}"
+				HardsploitAPI.instance.consoleProgress(
+					percent: 100 * (i + 1) / (number_complet_packet + (size_last_packet.zero? ? 0 : 1)),
+					startTime: startTime,
+					endTime:Time.new
+				)
 			end
 			#Last partial packet
 			if size_last_packet > 0 then
 					self.ahb.writeBlock(address+number_complet_packet*packet_size,data[number_complet_packet*packet_size..number_complet_packet*packet_size+size_last_packet])
-					puts "Write last packet : #{size_last_packet} packet"
+					#puts "Write last packet : #{size_last_packet} packet"
+			  	HardsploitAPI.instance.consoleProgress(percent:100,startTime:startTime,endTime:Time.new)
 			end
-			ahb.csw(1, 2) # 16-bit packed incrementing addressing
+			ahb.csw(1, 2) # set to default 32-bit incrementing addressing
 	end
 
 	def flashUnlock
@@ -83,17 +100,17 @@ attr_accessor :ahb
 			@ahb.writeWord(0x40022004, 0xCDEF89AB)
 	end
 	def flashErase
-			puts "Flash unlock"
+			HardsploitAPI.instance.consoleInfo "Flash unlock"
 			flashUnlock
 			# start the mass erase
 			@ahb.writeWord(0x40022010, 0x00000204)
 			@ahb.writeWord(0x40022010, 0x00000244)
 			# check the BSY flag
 			while (@ahb.readWord(0x4002200C) & 1) == 1
-					puts "waiting for erase completion..."
+					HardsploitAPI.instance.consoleInfo "waiting for erase completion..."
 			end
 			@ahb.writeWord(0x40022010, 0x00000200)
-			puts "Finish unlock flash"
+			HardsploitAPI.instance.consoleInfo "Finish unlock flash"
 	end
 	def flashProgram
 			@ahb.writeWord(0x40022010, 0x00000201)
