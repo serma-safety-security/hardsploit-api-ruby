@@ -10,7 +10,7 @@ require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/SPI/HardsploitAPI_SPI'
 
 def callbackInfo(receiveData)
-	print receiveData  + "\n"
+	#print receiveData  + "\n"
 end
 
 def callbackData(receiveData)
@@ -30,13 +30,19 @@ def callbackProgress(percent:,startTime:,endTime:)
 	puts "Elasped time #{(endTime-startTime).round(4)} sec"
 end
 
-puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
+#puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
 HardsploitAPI.callbackData = method(:callbackData)
 HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
+
+HardsploitAPI.instance.getAllVersions
+
+if ARGV[0] != "nofirmware" then
+	HardsploitAPI.instance.loadFirmware("SPI")
+end
 
 @spi = HardsploitAPI_SPI.new(speed:60,mode:0)
 #The current API version
@@ -102,6 +108,6 @@ while true
 	elsif  char  == "i" then
 			spiCustomCommand
 	elsif  char  == "p" then
-		print "Upload Firmware  check : #{HardsploitAPI.instance.uploadFirmware(pathFirmware:File.expand_path(File.dirname(__FILE__)) +  "/../../HARDSPLOIT-VHDL/Firmware/FPGA/SPI/SPI_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_SPI_INTERACT.rpd",checkFirmware:false)}\n"
+		HardsploitAPI.instance.loadFirmware("SPI")
 	end
 end

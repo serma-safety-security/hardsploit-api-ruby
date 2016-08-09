@@ -10,12 +10,12 @@ require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/UART/HardsploitAPI_UART'
 
 def callbackInfo(receiveData)
-	print receiveData  + "\n"
+	#print receiveData  + "\n"
 end
 
 def callbackData(receiveData)
 	if receiveData != nil then
-		puts "received #{receiveData.size}"
+			puts "received #{receiveData.size}"
 	  	p receiveData
 	end
 end
@@ -24,11 +24,12 @@ def callbackSpeedOfTransfert(receiveData)
 	#puts "Speed : #{receiveData}"
 end
 def callbackProgress(percent:,startTime:,endTime:)
-	puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
-	puts "Elasped time #{(endTime-startTime).round(4)} sec"
+	print "\r\e[#{31}mUpload of FPGA firmware in progress : #{percent}%\e[0m"
+	#puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
+	#puts "Elasped time #{(endTime-startTime).round(4)} sec"
 end
 
-puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
+#puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
 HardsploitAPI.callbackData = method(:callbackData)
@@ -36,8 +37,10 @@ HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
+HardsploitAPI.instance.getAllVersions
+
 if ARGV[0] != "nofirmware" then
-	print "Upload Firmware  check : #{HardsploitAPI.instance.uploadFirmware(pathFirmware:File.expand_path(File.dirname(__FILE__)) +  "/../../HARDSPLOIT-VHDL/Firmware/FPGA/UART/UART_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_UART_INTERACT.rpd",checkFirmware:false)}\n"
+	HardsploitAPI.instance.loadFirmware("UART")
 end
 @uart = HardsploitAPI_UART.new(baud_rate:57600, word_width:8,use_parity_bit:0,parity_type:0,nb_stop_bits:1,idle_line_level:1)
 puts "Effective baudrate #{@uart.baud_rate}"

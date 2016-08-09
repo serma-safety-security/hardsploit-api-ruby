@@ -8,6 +8,31 @@
 
 class HardsploitAPI
 public
+	def loadFirmware(firmware)
+		base_path = File.expand_path(File.dirname(__FILE__)) + '/../../Firmwares/FPGA/'
+		case firmware
+		when 'I2C'
+			firmware_path = base_path + 'I2C/I2C_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_I2C_INTERACT.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'SPI'
+			firmware_path = base_path + 'SPI/SPI_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_SPI_INTERACT.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'SPI_SNIFFER'
+			firmware_path = base_path + 'SPI/SPI_SNIFFER/HARDSPLOIT_FIRMWARE_FPGA_SPI_SNIFFER.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'PARALLEL'
+			firmware_path = base_path + 'PARALLEL/NO_MUX_PARALLEL_MEMORY/HARDSPLOIT_FIRMWARE_FPGA_NO_MUX_PARALLEL_MEMORY.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'SWD'
+			firmware_path = base_path + 'SWD/SWD_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_SWD_INTERACT.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'UART'
+			firmware_path = base_path + 'UART/UART_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_UART_INTERACT.rpd'
+			HardsploitAPI.instance.uploadFirmware(pathFirmware: firmware_path, checkFirmware: false)
+		when 'uC'
+				system("dfu-util -D 0483:df11 -a 0 -s 0x08000000 -R --download #{File.expand_path(File.dirname(__FILE__))}'/../Firmwares/UC/HARDSPLOIT_FIRMWARE_UC.bin'")
+		end
+	end
 
 	# Wait to receive data
 	# * +pathFirmware+:: path of rpd file (vhdl)
@@ -74,7 +99,7 @@ protected
 
 			usbPacket= Array.new
 			file = File.read(file_path,:encoding => 'iso-8859-1').unpack('C*') #string to array byte
-			puts "Last modified #{File.mtime(file_path)}"
+			puts "Date of last modification of the firmware #{File.mtime(file_path)}"
 
 			consoleInfo "FIRMARE Write #{file.size} bytes\n"
 
@@ -178,7 +203,6 @@ protected
 		file.pop(nbSuppressBytesAtLast)
 		return file
 	end
-
 
 	#Read firmware
 	def readFirmware(size)

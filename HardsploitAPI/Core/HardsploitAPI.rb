@@ -5,6 +5,33 @@ require_relative 'HardsploitAPI_CONSTANT'
 require_relative 'HardsploitAPI_USB_COMMUNICATION'
 require_relative 'HardsploitAPI_FIRMWARE'
 require_relative 'HardsploitAPI_ERROR'
+require_relative '../../Firmwares/FPGA/VersionFPGA'
+require_relative '../../Firmwares/UC/VersionUC'
+class String
+  def black;          "\e[30m#{self}\e[0m" end
+  def red;            "\e[31m#{self}\e[0m" end
+  def green;          "\e[32m#{self}\e[0m" end
+  def brown;          "\e[33m#{self}\e[0m" end
+  def blue;           "\e[34m#{self}\e[0m" end
+  def magenta;        "\e[35m#{self}\e[0m" end
+  def cyan;           "\e[36m#{self}\e[0m" end
+  def gray;           "\e[37m#{self}\e[0m" end
+
+  def bg_black;       "\e[40m#{self}\e[0m" end
+  def bg_red;         "\e[41m#{self}\e[0m" end
+  def bg_green;       "\e[42m#{self}\e[0m" end
+  def bg_brown;       "\e[43m#{self}\e[0m" end
+  def bg_blue;        "\e[44m#{self}\e[0m" end
+  def bg_magenta;     "\e[45m#{self}\e[0m" end
+  def bg_cyan;        "\e[46m#{self}\e[0m" end
+  def bg_gray;        "\e[47m#{self}\e[0m" end
+
+  def bold;           "\e[1m#{self}\e[22m" end
+  def italic;         "\e[3m#{self}\e[23m" end
+  def underline;      "\e[4m#{self}\e[24m" end
+  def blink;          "\e[5m#{self}\e[25m" end
+  def reverse_color;  "\e[7m#{self}\e[27m" end
+end
 
 class HardsploitAPI
   include Singleton
@@ -18,7 +45,7 @@ class HardsploitAPI
   @@callbackProgress = nil
   @@callbackSpeedOfTransfert = nil
   @@id = 0
-@@crossWiringValue = Array.new
+  @@crossWiringValue = Array.new
 
   def self.callbackData= fn
         @@callbackData = fn
@@ -54,10 +81,9 @@ class HardsploitAPI
          	@@crossWiringValue.push i
          end
          self.connect
-         puts "Hardsploit is connected"
+         puts "Hardsploit is connected".green.bold
        end
   end
-
 
   # Set the leds of uC  returning nothing
 	# * +led+:: USB_COMMAND::GREEN_LED  or USB_COMMAND::RED_LED
@@ -114,6 +140,13 @@ class HardsploitAPI
     else
       return "BAD VERSION NUMBER"
     end
+  end
+
+  def getAllVersions
+    puts "API             : #{VERSION::API}".blue.bold
+    puts "Board           : #{getVersionNumber}".blue.bold
+    puts "FPGA            : #{VersionFPGA::VERSION_FPGA::FPGA}".blue.bold
+    puts "Microcontroller : #{VersionUC::VERSION_UC::UC}".blue.bold
   end
 
   def self.reverseBit(byte)

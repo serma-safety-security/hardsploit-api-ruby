@@ -10,7 +10,7 @@ require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/SPI_SNIFFER/HardsploitAPI_SPI_SNIFFER'
 
 def callbackInfo(receiveData)
-	print receiveData  + "\n"
+	#print receiveData  + "\n"
 end
 
 def callbackData(receiveData)
@@ -25,18 +25,26 @@ end
 def callbackSpeedOfTransfert(receiveData)
 	#puts "Speed : #{receiveData}"
 end
+
 def callbackProgress(percent:,startTime:,endTime:)
-	puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
-	puts "Elasped time #{(endTime-startTime).round(4)} sec"
+	print "\r\e[#{31}mUpload of FPGA firmware in progress : #{percent}%\e[0m"
+	#puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
+	#puts "Elasped time #{(endTime-startTime).round(4)} sec"
 end
 
-puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
+#puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
 HardsploitAPI.callbackData = method(:callbackData)
 HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
+
+HardsploitAPI.instance.getAllVersions
+
+if ARGV[0] != "nofirmware" then
+	HardsploitAPI.instance.loadFirmware("SPI_SNIFFER")
+end
 
 @spi = HardsploitAPI_SPI_SNIFFER.new(mode:0,sniff:HardsploitAPI::SPISniffer::MOSI)  # MISO MOSI MISO_MOSI
 
@@ -78,6 +86,6 @@ while true
 	elsif  char  == "i" then
 			spiCustomCommand
 	elsif  char  == "p" then
-		print "Upload Firmware  check : #{HardsploitAPI.instance.uploadFirmware(pathFirmware:File.expand_path(File.dirname(__FILE__)) +  "/../../HARDSPLOIT-VHDL/Firmware/FPGA/SPI/SPI_SNIFFER/HARDSPLOIT_FIRMWARE_FPGA_SPI_SNIFFER.rpd",checkFirmware:false)}\n"
+			HardsploitAPI.instance.loadFirmware("SPI")
 	end
 end

@@ -10,7 +10,7 @@ require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/I2C/HardsploitAPI_I2C'
 
 def callbackInfo(receiveData)
-	print receiveData  + "\n"
+	#print receiveData  + "\n"
 end
 
 def callbackData(receiveData)
@@ -25,24 +25,26 @@ end
 def callbackSpeedOfTransfert(receiveData)
 	#puts "Speed : #{receiveData}"
 end
+
 def callbackProgress(percent:,startTime:,endTime:)
-	puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
-	puts "Elasped time #{(endTime-startTime).round(4)} sec"
+	print "\r\e[#{31}mUpload of FPGA firmware in progress : #{percent}%\e[0m"
+	#puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
+	#puts "Elasped time #{(endTime-startTime).round(4)} sec"
 end
 
-puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
-
+#puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
 
 HardsploitAPI.callbackInfo = method(:callbackInfo)
 HardsploitAPI.callbackData = method(:callbackData)
 HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
-HardsploitAPI.id = ARGV[0].to_i  # id of hardsploit 0 for the first one, 1 for the second etc
+HardsploitAPI.id = 0  # id of hardsploit 0 for the first one, 1 for the second etc
 
+HardsploitAPI.instance.getAllVersions
 
-#The current API version
-#p HardsploitAPI::VERSION::API
-
+if ARGV[0] != "nofirmware" then
+	HardsploitAPI.instance.loadFirmware("I2C")
+end
 
 def i2cCustomScan
 	begin

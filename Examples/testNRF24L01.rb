@@ -10,7 +10,7 @@ require_relative '../HardsploitAPI/Core/HardsploitAPI'
 require_relative '../HardsploitAPI/Modules/NRF24L01/HardsploitAPI_NRF24L01'
 
 def callbackInfo(receiveData)
-	print receiveData  + "\n"
+	#print receiveData  + "\n"
 end
 
 def callbackData(receiveData)
@@ -25,9 +25,11 @@ end
 def callbackSpeedOfTransfert(receiveData)
 	#puts "Speed : #{receiveData}"
 end
+
 def callbackProgress(percent:,startTime:,endTime:)
-	puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
-	puts "Elasped time #{(endTime-startTime).round(4)} sec"
+	print "\r\e[#{31}mUpload of FPGA firmware in progress : #{percent}%\e[0m"
+	#puts "Progress : #{percent}%  Start@ #{startTime}  Stop@ #{endTime}"
+	#puts "Elasped time #{(endTime-startTime).round(4)} sec"
 end
 
 puts "Number of hardsploit detected :#{HardsploitAPI.getNumberOfBoardAvailable}"
@@ -37,11 +39,11 @@ HardsploitAPI.callbackSpeedOfTransfert = method(:callbackSpeedOfTransfert)
 HardsploitAPI.callbackProgress = method(:callbackProgress)
 HardsploitAPI.id = 0
 
+HardsploitAPI.instance.getAllVersions
+
 if ARGV[0] != "nofirmware" then
-	print "Upload Firmware  check : #{HardsploitAPI.instance.uploadFirmware(pathFirmware:File.expand_path(File.dirname(__FILE__)) +  "/../../HARDSPLOIT-VHDL/Firmware/FPGA/SPI/SPI_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_SPI_INTERACT.rpd",checkFirmware:false)}\n"
+	HardsploitAPI.instance.loadFirmware("SPI")
 end
-# Wait to be sure the fpga was started
-sleep(1)
 
 # HARDSPLOIT      		 				NRF24L01
 # SPI_CLK   (pin A0)	 	===>    SCK
@@ -115,6 +117,6 @@ while true
 		end
 
 	elsif  char  == "p" then
-		print "Upload Firmware  check : #{HardsploitAPI.instance.uploadFirmware(pathFirmware:File.expand_path(File.dirname(__FILE__)) +  "/../../HARDSPLOIT-VHDL/Firmware/FPGA/SPI/SPI_INTERACT/HARDSPLOIT_FIRMWARE_FPGA_SPI_INTERACT.rpd",checkFirmware:false)}\n"
+		HardsploitAPI.instance.loadFirmware("SPI")
 	end
 end
